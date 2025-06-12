@@ -1,31 +1,59 @@
 #include "exam/exam.h"
 #include "exec_timer/exec_timer.h"
-#include <fstream>
 #include <iostream>
-#include <string>
+#include <pstl/glue_execution_defs.h>
 #include <vector>
 
-constexpr std::string FILE_NAME = "./exam.txt";
-constexpr int NUM_OF_MCQS = 100;
+namespace Scorer {
+class BaseScorer {
+public:
+  virtual ~BaseScorer() = default;
+  virtual std::vector<uint32_t>
+  score(const std::vector<Exam> &exams, const Exam &correct_answers,
+        const std::array<uint8_t, NUMBER_OF_QUESTIONS> &points) = 0;
+};
 
-using Exam = std::array<char, NUM_OF_MCQS>;
-std::vector<Exam> exams;
-
-void read_exams(const std::string &file_name) {
-  ExecTimer timer("read_exams");
-  std::ifstream exam_file(file_name);
-  std::string line;
-  while (std::getline(exam_file, line)) {
-    Exam exam;
-    for (int i = 0; i < NUM_OF_MCQS; ++i) {
-      exam[i] = line[i];
+class NaiveScorer final : public BaseScorer {
+public:
+  std::vector<uint32_t>
+  score(const std::vector<Exam> &exams, const Exam &correct_answers,
+        const std::array<uint8_t, NUMBER_OF_QUESTIONS> &points) override {
+    ExecTimer timer("NaiveScorer");
+    std::vector<uint32_t> scored_exams_points(exams.size());
+    for (size_t i = 0; i < exams.size(); ++i) {
+      for (size_t j = 0; j < exams[i].size(); ++j) {
+        if (exams[i][j] == correct_answers[j]) {
+          scored_exams_points[i] += points[j];
+        }
+      }
     }
-    exams.emplace_back(exam);
+    return scored_exams_points;
   }
-}
+};
+
+class MultithreadedNaiveScorer final : public BaseScorer {
+  std::vector<uint32_t>
+  score(const std::vector<Exam> &exams, const Exam &correct_answers,
+        const std::array<uint8_t, NUMBER_OF_QUESTIONS> &points) override {
+    ExecTimer timer("MultithreadedNaiveScorer");
+    std::vector<uint32_t> scored_exams_points(exams.size());
+    throw new std::runtime_error("Not implemented");
+    return scored_exams_points;
+  }
+};
+}; // namespace Scorer
 
 int main() {
-  generate_exams(FILE_NAME);
-  read_exams(FILE_NAME);
+  std::vector<Exam> exams = generate_exams();
+  Exam correct_answers = generate_correct_answers();
+  std::array<uint8_t, NUMBER_OF_QUESTIONS> points = generate_points();
+  std::vector<std::shared_ptr<Scorer::BaseScorer>> scorers = {
+      std::make_shared<Scorer::NaiveScorer>(),
+      // std::make_shared<Scorer::BaseScorer>(Scorer::MultithreadedNaiveScorer()),
+  };
+  std::vector<std::vector<uint32_t>> results;
+  for (auto &scorer : scorers) {
+    results.emplace_back(scorer->score(exams, correct_answers, points));
+  }
   return 0;
 }

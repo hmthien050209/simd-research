@@ -14,6 +14,6 @@ ExecTimer::~ExecTimer() {
   const auto duration = this->endTime - this->startTime;
   const std::string message = std::format("\'{0}\': {1} = {2}", this->caller,
                                           duration_cast<nanoseconds>(duration),
-                                          duration_cast<seconds>(duration));
+                                          duration_cast<milliseconds>(duration));
   std::cout << message << std::endl;
 }

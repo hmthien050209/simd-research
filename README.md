@@ -11,5 +11,7 @@ This repository contains code of my SIMD experiment.
 meson setup
 ```
 
+## Reference
+- https://www.pcg-random.org/ (used in the random exam generator)
+
 ## License
-TBD.
