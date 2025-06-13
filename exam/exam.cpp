@@ -12,7 +12,7 @@ std::vector<Exam> generate_exams() {
   pcg32 rng(seed_source);
 
   // The list of exams
-  std::vector<Exam> exams(NUMBER_OF_EXAMS);
+  std::vector<Exam> exams(NUMBER_OF_EXAMS, Exam(NUMBER_OF_QUESTIONS));
   for (auto &exam : exams) {
     for (auto &answer : exam) {
       answer = static_cast<char>(rng(4) + 'A');
@@ -28,7 +28,7 @@ Exam generate_correct_answers() {
   pcg_extras::seed_seq_from<std::random_device> seed_source;
   pcg32 rng(seed_source);
 
-  Exam exam;
+  Exam exam(NUMBER_OF_QUESTIONS);
   for (auto &answer : exam) {
     answer = static_cast<char>(rng(4) + 'A');
   }
@@ -36,9 +36,9 @@ Exam generate_correct_answers() {
 }
 
 // Generate a list of MCQs' points
-std::array<uint8_t, NUMBER_OF_QUESTIONS> generate_points() {
+std::vector<uint8_t> generate_points() {
   ExecTimer timer("generate_points");
-  std::array<uint8_t, NUMBER_OF_QUESTIONS> points;
+  std::vector<uint8_t> points(NUMBER_OF_QUESTIONS);
   for (auto &x : points) {
     x = 2;
   }

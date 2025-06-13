@@ -1,3 +1,2 @@
-buildDir/
-build/
+build*/
 .idea
