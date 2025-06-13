@@ -1,101 +1,57 @@
 #include "exam/exam.h"
 #include "exec_timer/exec_timer.h"
+#include "scorers/scorers.hpp"
 
 #include <iostream>
 #include <vector>
 
-namespace Scorer {
-class BaseScorer {
-public:
-  virtual ~BaseScorer() = default;
-  virtual std::vector<uint32_t> score(const std::vector<Exam> &exams,
-                                      const Exam &correct_answers,
-                                      const std::vector<uint8_t> &points) = 0;
-};
-
-class NaiveScorer final : public BaseScorer {
-public:
-  std::vector<uint32_t> score(const std::vector<Exam> &exams,
-                              const Exam &correct_answers,
-                              const std::vector<uint8_t> &points) override {
-    ExecTimer timer("NaiveScorer");
-    std::vector<uint32_t> scored_exams_points(exams.size());
-    for (size_t i = 0; i < exams.size(); ++i) {
-      for (size_t j = 0; j < exams[i].size(); ++j) {
-        if (exams[i][j] == correct_answers[j]) {
-          scored_exams_points[i] += points[j];
-        }
-      }
-    }
-    return scored_exams_points;
-  }
-};
-
-class BooleanMultiplicationScorer final : public BaseScorer {
-public:
-  std::vector<uint32_t> score(const std::vector<Exam> &exams,
-                              const Exam &correct_answers,
-                              const std::vector<uint8_t> &points) override {
-    ExecTimer timer("BooleanMultiplicationScorer");
-    std::vector<uint32_t> scored_exams_points(exams.size());
-    for (size_t i = 0; i < exams.size(); ++i) {
-      for (size_t j = 0; j < exams[i].size(); ++j) {
-        // Idea: to reduce false branch predictions
-        scored_exams_points[i] +=
-            (exams[i][j] == correct_answers[j]) * points[j];
-      }
-    }
-    return scored_exams_points;
-  }
-};
-}; // namespace Scorer
-
 int main() {
-  // The synthetic tests
-  const std::vector<Exam> exams = generate_exams();
-  const Exam correct_answers = generate_correct_answers();
-  const std::vector<uint8_t> points = generate_points();
+    // The synthetic tests
+    const std::vector<Exam> exams = generate_exams();
+    const Exam correct_answers = generate_correct_answers();
+    const std::vector<int8_t> points = generate_points();
 
-  // The scorers to be tested
-  const std::vector<std::shared_ptr<Scorer::BaseScorer>> scorers = {
-      std::make_shared<Scorer::NaiveScorer>(),
-      std::make_shared<Scorer::BooleanMultiplicationScorer>(),
-  };
-  std::vector<std::vector<uint32_t>> scored_results;
-  for (const auto &scorer : scorers) {
-    scored_results.emplace_back(scorer->score(exams, correct_answers, points));
-  }
-
-  // Comparison logic
-  if (scorers.size() != scored_results.size()) {
-    std::cout << "Error: the number of scorers and results is different."
-              << std::endl;
-    return 1;
-  }
-
-  for (size_t i = 0; i < scored_results.size() - 1; ++i) {
-    if (scored_results[i].size() != scored_results[i + 1].size()) {
-      const std::string message = std::format(
-          "Error: the number of exams between "
-          "scorers is different: scorer {0}: {1} "
-          "elements, scorer {2}: {3} elements.",
-          i, scored_results[i].size(), i + 1, scored_results[i + 1].size());
-      std::cout << message << std::endl;
-      return 1;
+    // The scorers to be tested
+    const std::vector<std::shared_ptr<Scorer::BaseScorer> > scorers = {
+        std::make_shared<Scorer::NaiveScorer>(),
+        std::make_shared<Scorer::BooleanMultiplicationScorer>(),
+        std::make_shared<Scorer::SimdScorer>(),
+    };
+    std::vector<std::vector<int32_t> > scored_results;
+    for (const auto &scorer: scorers) {
+        scored_results.emplace_back(scorer->score(exams, correct_answers, points));
     }
 
-    for (size_t j = 0; j < scored_results[i].size(); ++j) {
-      if (scored_results[i][j] != scored_results[i + 1][j]) {
-        const std::string message = std::format(
-            "Error: the score of exam {0} is different: scorer {1}: {2}, "
-            "scorer {3}: {4}",
-            j, i, scored_results[i][j], i + 1, scored_results[i + 1][j]);
-        std::cout << message << std::endl;
+    // Comparison logic
+    if (scorers.size() != scored_results.size()) {
+        std::cout << "Error: the number of scorers and results is different."
+                << std::endl;
         return 1;
-      }
     }
-  }
 
-  std::cout << "All tests passed." << std::endl;
-  return 0;
+    for (size_t i = 0; i < scored_results.size() - 1; ++i) {
+        if (scored_results[i].size() != scored_results[i + 1].size()) {
+            const std::string message = std::format(
+                "Error: the number of exams between "
+                "scorers is different: scorer {0}: {1} "
+                "elements, scorer {2}: {3} elements.",
+                i, scored_results[i].size(), i + 1, scored_results[i + 1].size());
+            std::cout << message << std::endl;
+            return 1;
+        }
+
+        for (size_t j = 0; j < scored_results[i].size(); ++j) {
+            if (scored_results[i][j] != scored_results[i + 1][j]) {
+                const std::string message = std::format(
+                    "Error: the score of exam {0} is different: scorer {1}: {2}, "
+                    "scorer {3}: {4}",
+                    j, i, scored_results[i][j], i + 1, scored_results[i + 1][j]);
+                std::cout << message << std::endl;
+                return 1;
+            }
+        }
+    }
+
+    std::cout << "All tests passed." << std::endl;
+    return 0;
 }
