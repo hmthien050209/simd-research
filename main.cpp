@@ -40,6 +40,7 @@ public:
     std::vector<uint32_t> scored_exams_points(exams.size());
     for (size_t i = 0; i < exams.size(); ++i) {
       for (size_t j = 0; j < exams[i].size(); ++j) {
+        // Idea: to reduce false branch predictions
         scored_exams_points[i] +=
             (exams[i][j] == correct_answers[j]) * points[j];
       }
