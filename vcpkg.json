@@ -1,0 +1,10 @@
+{
+  "name": "simd-research",
+  "version": "1.0.0",
+  "dependencies": [
+    "benchmark",
+    "fmt",
+    "pcg",
+    "gtest"
+  ]
+}

@@ -2,13 +2,17 @@
 This repository contains code of my SIMD experiment.
 
 ## Requirements
-- [Meson build system](https://mesonbuild.com)
-- GCC (with C++20 support)
-- An x86_64 CPU with at least AVX support.
+- CMake (>= 3.20)
+- GCC (>=10.0, with C++20 support)
+- vcpkg
+- pkg-config
+- An x86_64 CPU with at least AVX2 support.
 
 ## Run
 ```shell
-meson setup
+cmake --preset=default
+cmake --build build
+./build/main
 ```
 
 ## Reference
