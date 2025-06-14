@@ -4,8 +4,8 @@ project(simd_research VERSION 1.0.0 LANGUAGES CXX)
 # Use C++20
 set(CMAKE_CXX_STANDARD 20)
 
-# Compile with AVX2
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx512 -Wall -fno-omit-frame-pointer -fsanitize=address -fno-sanitize-recover=all")
+# Compile with AVX512
+add_compile_options(-mavx512bw -mavx512vl -mavx512f -mavx512dq -Wall -fno-omit-frame-pointer -fsanitize=address -fno-sanitize-recover=all)
 
 # Build flags
 set(CMAKE_CXX_FLAGS_DEBUG_INIT "-ggdb")
