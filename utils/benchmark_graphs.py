@@ -32,10 +32,16 @@ def render_graphs(file_name: str):
             benchmarks_dict[f'BM_SimdScorer/{exam_num}/100'],
             benchmarks_dict[f'BM_SimdScorer/{exam_num}/200'],
         ]
+        simd_avx512_val = [
+            benchmarks_dict[f'BM_SimdAvx512Scorer/{exam_num}/10'],
+            benchmarks_dict[f'BM_SimdAvx512Scorer/{exam_num}/100'],
+            benchmarks_dict[f'BM_SimdAvx512Scorer/{exam_num}/200'],
+        ]
 
         ax.plot(mcq_nums, naive_val, 'o-', label="Naive")
         ax.plot(mcq_nums, boolean_mul_val, 'o-', label="Boolean Multiplication")
-        ax.plot(mcq_nums, simd_val, 'o-', label="SIMD")
+        ax.plot(mcq_nums, simd_val, 'o-', label="SIMD AVX2")
+        ax.plot(mcq_nums, simd_avx512_val, 'o-', label="SIMD AVX512")
 
         # Display the value above every data point
         for x, y in zip(mcq_nums, naive_val):
@@ -44,6 +50,8 @@ def render_graphs(file_name: str):
             ax.text(x, y + 25, f"{int(y)}", ha="center")
         for x, y in zip(mcq_nums, simd_val):
             ax.text(x, y - 25, f"{int(y)}", ha="center")
+            for x, y in zip(mcq_nums, simd_avx512_val):
+                ax.text(x, y - 10, f"{int(y)}", ha="center")
 
         ax.set_title(f"Scoring time for {exam_num} exams")
         ax.set_xlabel("Number of MCQs")
