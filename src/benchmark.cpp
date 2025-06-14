@@ -62,4 +62,23 @@ BENCHMARK(BM_SimdScorer)
     ->ArgsProduct({{100'000, 5'000'000, 10'000'000}, {10, 100, 200}})
     ->Unit(benchmark::kMillisecond);
 
+static void BM_SimdAvx512Scorer(benchmark::State& state) {
+  for (auto _ : state) {
+    state.PauseTiming();
+    auto exams = generate_exams(state.range(0), state.range(1));
+    auto correct_answers = generate_correct_answers(state.range(1));
+    auto points = generate_points(state.range(1));
+    auto simd_avx512_scorer = std::make_shared<Scorer::SimdAvx512Scorer>();
+    benchmark::ClobberMemory();
+    state.ResumeTiming();
+
+    auto result = simd_avx512_scorer->score(exams, correct_answers, points);
+    benchmark::DoNotOptimize(result);
+  }
+}
+
+BENCHMARK(BM_SimdAvx512Scorer)
+    ->ArgsProduct({{100'000, 5'000'000, 10'000'000}, {10, 100, 200}})
+    ->Unit(benchmark::kMillisecond);
+
 BENCHMARK_MAIN();

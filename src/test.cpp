@@ -11,6 +11,8 @@ class ScorerTestFixture : public testing::Test {
       std::make_shared<Scorer::BooleanMultiplicationScorer>();
   const std::shared_ptr<Scorer::BaseScorer> simd_scorer =
       std::make_shared<Scorer::SimdScorer>();
+  const std::shared_ptr<Scorer::BaseScorer> simd_avx512_scorer =
+      std::make_shared<Scorer::SimdAvx512Scorer>();
 
   std::vector<Exam> exams_size_mismatch;
   Exam correct_answers_size_mismatch;
@@ -24,22 +26,29 @@ class ScorerTestFixture : public testing::Test {
     correct_answers_size_mismatch = {'A'};
     points_size_mismatch = {1, 2, 3};
 
-    exams = {{
-                 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
-                 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
-                 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
-             },
-             {
-                 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B',
-                 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B',
-                 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B',
-             }};
+    exams = {
+        {
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+            'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+        },
+        {
+            'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B',
+            'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B',
+            'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B',
+            'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B',
+            'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B',
+        }};
     correct_answers = {
-        'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
-        'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
-        'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+        'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+        'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+        'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+        'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
+        'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
     };
-    points = std::vector<int8_t>(32, 2);
+    points = std::vector<int8_t>(64, 2);
   }
 };
 
@@ -56,6 +65,10 @@ TEST_F(ScorerTestFixture, HandleVectorSizeMismatch) {
       simd_scorer->score(exams_size_mismatch, correct_answers_size_mismatch,
                          points_size_mismatch),
       std::runtime_error);
+  EXPECT_THROW(simd_avx512_scorer->score(exams_size_mismatch,
+                                         correct_answers_size_mismatch,
+                                         points_size_mismatch),
+               std::runtime_error);
 }
 
 TEST_F(ScorerTestFixture, ScorerWorks) {
@@ -65,4 +78,6 @@ TEST_F(ScorerTestFixture, ScorerWorks) {
   EXPECT_EQ(
       boolean_multiplication_scorer->score(exams, correct_answers, points),
       simd_scorer->score(exams, correct_answers, points));
+  EXPECT_EQ(simd_scorer->score(exams, correct_answers, points),
+            simd_avx512_scorer->score(exams, correct_answers, points));
 }

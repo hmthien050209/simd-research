@@ -5,11 +5,10 @@ project(simd_research VERSION 1.0.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 
 # Compile with AVX2
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx2 -Wall -fno-omit-frame-pointer -fsanitize=address -fno-sanitize-recover=all")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx512 -Wall -fno-omit-frame-pointer -fsanitize=address -fno-sanitize-recover=all")
 
 # Build flags
 set(CMAKE_CXX_FLAGS_DEBUG_INIT "-ggdb")
-set(CMAKE_CXX_FLAGS_RELEASE_INIT "-O2")
 set(BENCHMARK_LTO ON)
 
 # We're targeting only GCC for now
