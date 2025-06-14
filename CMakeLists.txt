@@ -4,8 +4,13 @@ project(simd_research VERSION 1.0.0 LANGUAGES CXX)
 # Use C++20
 set(CMAKE_CXX_STANDARD 20)
 
+# Sanitizers
+set(SANITIZER_FLAGS -fno-omit-frame-pointer -fsanitize=address -fno-sanitize-recover=all)
+
 # Compile with AVX512
-add_compile_options(-mavx512bw -mavx512vl -mavx512f -mavx512dq -Wall -fno-omit-frame-pointer -fsanitize=address -fno-sanitize-recover=all)
+add_compile_options(-mavx512bw -mavx512vl -mavx512f -mavx512dq -Wall)
+
+set(CMAKE_EXE_LINKER_FLAGS ${SANITIZERS_FLAGS})
 
 # Build flags
 set(CMAKE_CXX_FLAGS_DEBUG_INIT "-ggdb")
@@ -48,6 +53,7 @@ target_link_libraries(
 )
 
 target_include_directories(main_test PRIVATE ${PCG_INCLUDE_DIRS})
+target_link_options(main_test PRIVATE ${SANITIZER_FLAGS})
 
 include(GoogleTest)
 gtest_discover_tests(main_test)
@@ -66,3 +72,5 @@ target_link_libraries(
 )
 
 target_include_directories(main_benchmark PRIVATE ${PCG_INCLUDE_DIRS})
+target_link_options(main_benchmark PRIVATE ${SANITIZER_FLAGS})
+

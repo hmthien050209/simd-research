@@ -5,14 +5,10 @@
 
 class ScorerTestFixture : public testing::Test {
  protected:
-  const std::shared_ptr<Scorer::BaseScorer> naive_scorer =
-      std::make_shared<Scorer::NaiveScorer>();
-  const std::shared_ptr<Scorer::BaseScorer> boolean_multiplication_scorer =
-      std::make_shared<Scorer::BooleanMultiplicationScorer>();
-  const std::shared_ptr<Scorer::BaseScorer> simd_scorer =
-      std::make_shared<Scorer::SimdScorer>();
-  const std::shared_ptr<Scorer::BaseScorer> simd_avx512_scorer =
-      std::make_shared<Scorer::SimdAvx512Scorer>();
+  std::shared_ptr<Scorer::BaseScorer> naive_scorer;
+  std::shared_ptr<Scorer::BaseScorer> boolean_multiplication_scorer;
+  std::shared_ptr<Scorer::BaseScorer> simd_scorer;
+  std::shared_ptr<Scorer::BaseScorer> simd_avx512_scorer;
 
   std::vector<Exam> exams_size_mismatch;
   Exam correct_answers_size_mismatch;
@@ -22,6 +18,11 @@ class ScorerTestFixture : public testing::Test {
   std::vector<int8_t> points;
 
   void SetUp() override {
+    naive_scorer = std::make_shared<Scorer::NaiveScorer>();
+    boolean_multiplication_scorer = std::make_shared<Scorer::BooleanMultiplicationScorer>();
+    simd_scorer = std::make_shared<Scorer::SimdScorer>();
+    simd_avx512_scorer = std::make_shared<Scorer::SimdAvx512Scorer>();
+
     exams_size_mismatch = std::vector(1, Exam(2, 'B'));
     correct_answers_size_mismatch = {'A'};
     points_size_mismatch = {1, 2, 3};
