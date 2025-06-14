@@ -1,19 +1,15 @@
 #include <random>
 
 #include "exam.h"
-#include "exec_timer.h"
 #include "pcg_random.hpp"
 
-// Generate `NUMBER_OF_EXAMS` exams, and for each exam, there are
-// `NUMBER_OF_QUESTIONS` MCQs with the answer in ['A', 'B', 'C', 'D']
-std::vector<Exam> generate_exams() {
-  ExecTimer timer("generate_exams");
-
+// Generate exams of MCQs with the answer in ['A', 'B', 'C', 'D']
+std::vector<Exam> generate_exams(const int32_t &number_of_exams, const int32_t &number_of_questions) {
   pcg_extras::seed_seq_from<std::random_device> seed_source;
   pcg32 rng(seed_source);
 
   // The list of exams
-  std::vector exams(NUMBER_OF_EXAMS, Exam(NUMBER_OF_QUESTIONS));
+  std::vector exams(number_of_exams, Exam(number_of_questions));
 
   for (auto &exam : exams) {
     for (auto &answer : exam) {
@@ -25,13 +21,11 @@ std::vector<Exam> generate_exams() {
 }
 
 // Generate an exam with a list of random correct answers
-Exam generate_correct_answers() {
-  ExecTimer timer("generate_correct_answers");
-
+Exam generate_correct_answers(const int32_t &number_of_questions) {
   pcg_extras::seed_seq_from<std::random_device> seed_source;
   pcg32 rng(seed_source);
 
-  Exam exam(NUMBER_OF_QUESTIONS);
+  Exam exam(number_of_questions);
 
   for (auto &answer : exam) {
     answer = static_cast<char>(rng(4) + 'A');
@@ -41,10 +35,8 @@ Exam generate_correct_answers() {
 }
 
 // Generate a list of MCQs' points
-std::vector<int8_t> generate_points() {
-  ExecTimer timer("generate_points");
-
-  std::vector<int8_t> points(NUMBER_OF_QUESTIONS);
+std::vector<int8_t> generate_points(const int32_t &number_of_questions) {
+  std::vector<int8_t> points(number_of_questions);
 
   for (auto &x : points) {
     x = 2;

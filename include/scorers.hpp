@@ -20,11 +20,24 @@ class NaiveScorer final : public BaseScorer {
   std::vector<int32_t> score(const std::vector<Exam> &exams,
                              const Exam &correct_answers,
                              const std::vector<int8_t> &points) override {
-    ExecTimer timer("NaiveScorer");
+    if (exams.empty()) {
+      return {};
+    }
+
+    if (correct_answers.size() != points.size()) {
+      throw std::runtime_error(
+          "The size of correct answers and points must be the same.");
+    }
 
     std::vector<int32_t> scored_exams_points(exams.size());
 
     for (size_t i = 0; i < exams.size(); ++i) {
+      if (exams[i].size() != correct_answers.size()) {
+        throw std::runtime_error(
+            "The size of exams' questions and correct answers must be the "
+            "same.");
+      }
+
       for (size_t j = 0; j < exams[i].size(); ++j) {
         if (exams[i][j] == correct_answers[j]) {
           scored_exams_points[i] += static_cast<int32_t>(points[j]);
@@ -41,11 +54,24 @@ class BooleanMultiplicationScorer final : public BaseScorer {
   std::vector<int32_t> score(const std::vector<Exam> &exams,
                              const Exam &correct_answers,
                              const std::vector<int8_t> &points) override {
-    ExecTimer timer("BooleanMultiplicationScorer");
+    if (exams.empty()) {
+      return {};
+    }
+
+    if (correct_answers.size() != points.size()) {
+      throw std::runtime_error(
+          "The size of correct answers and points must be the same.");
+    }
 
     std::vector<int32_t> scored_exams_points(exams.size());
 
     for (size_t i = 0; i < exams.size(); ++i) {
+      if (exams[i].size() != correct_answers.size()) {
+        throw std::runtime_error(
+            "The size of exams' questions and correct answers must be the "
+            "same.");
+      }
+
       for (size_t j = 0; j < exams[i].size(); ++j) {
         // Idea: to reduce false branch predictions
         scored_exams_points[i] += (exams[i][j] == correct_answers[j]) *
@@ -58,23 +84,40 @@ class BooleanMultiplicationScorer final : public BaseScorer {
 };
 
 class SimdScorer final : public BaseScorer {
+ public:
   std::vector<int32_t> score(const std::vector<Exam> &exams,
                              const Exam &correct_answers,
                              const std::vector<int8_t> &points) override {
     if (!__builtin_cpu_supports("avx2")) {
       throw std::runtime_error(
-          "SIMD scorer not supported because the CPU lacks AVX2 support.");
+          "SIMD checker not supported because the CPU lacks AVX2 support.");
     }
 
-    ExecTimer timer("SimdScorer");
+    if (exams.empty()) {
+      return {};
+    }
+
+    if (correct_answers.size() != points.size()) {
+      throw std::runtime_error(
+          "The size of correct answers and points must be the same.");
+    }
+
     std::vector<int32_t> scored_exams_points(exams.size());
     // We are targeting AVX2, so we have at most 256-bit registers,
     // which means that we can pack 32 MCQs to score at a time
+    // ReSharper disable once CppTooWideScopeInitStatement
     constexpr int32_t BATCH_SIZE = 32;
 
     // Process each exam
     for (size_t i = 0; i < exams.size(); ++i) {
       auto &exam = exams[i];
+
+      if (exam.size() != correct_answers.size()) {
+        throw std::runtime_error(
+            "The size of exams' questions and correct answers must be the "
+            "same.");
+      }
+
       int32_t exam_scored_points = 0;
 
       size_t j = 0;
