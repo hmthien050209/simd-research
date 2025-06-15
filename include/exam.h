@@ -37,24 +37,6 @@ class ByteArray {
     }
   }
 
-  void fill_values(const size_t &size, const int8_t &value) const {
-#if defined(__AVX2__) && !(defined(__AVX512BW__) && defined(__AVX512VL__) && \
-                           defined(__AVX512F__) && defined(__AVX512DQ__))
-    for (size_t i = 0; i < _block_count; i++) {
-      _mm256_storeu_si256(reinterpret_cast<__m256i *>(_values + i),
-                          _mm256_set1_epi8(value));
-    }
-#elif defined(__AVX512BW__) && defined(__AVX512VL__) && \
-    defined(__AVX512F__) && defined(__AVX512DQ__)
-    for (size_t i = 0; i < _block_count; i++) {
-      _mm512_storeu_si512(reinterpret_cast<__m512i *>(_values + i),
-                          _mm512_set1_epi8(value));
-    }
-#else
-    std::fill_n(values, _capacity, value);
-#endif
-  }
-
  public:
   // Initialize an empty ByteArray
   ByteArray() : _size(0), _capacity(0), _block_count(0), _values(nullptr) {}
@@ -76,7 +58,12 @@ class ByteArray {
   ByteArray(const size_t &size,     // NOLINT(*-pro-type-member-init)
             const int8_t &value) {  // NOLINT(*-pro-type-member-init)
     construct(size);
-    fill_values(size, value);
+
+    std::fill_n(
+        // ReSharper disable once CppObjectMemberMightNotBeInitialized
+        _values,
+        // ReSharper disable once CppObjectMemberMightNotBeInitialized
+        _size, value);
   }
 
   // Copy constructor
