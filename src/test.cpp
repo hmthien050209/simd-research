@@ -10,12 +10,12 @@ class ScorerTestFixture : public testing::Test {
   std::shared_ptr<Scorer::BaseScorer> simd_scorer;
   std::shared_ptr<Scorer::BaseScorer> simd_avx512_scorer;
 
-  std::vector<Exam> exams_size_mismatch;
-  Exam correct_answers_size_mismatch;
-  std::vector<int8_t> points_size_mismatch;
-  std::vector<Exam> exams;
-  Exam correct_answers;
-  std::vector<int8_t> points;
+  std::vector<ByteArray> exams_size_mismatch;
+  ByteArray correct_answers_size_mismatch;
+  ByteArray points_size_mismatch;
+  std::vector<ByteArray> exams;
+  ByteArray correct_answers;
+  ByteArray points;
 
   void SetUp() override {
     naive_scorer = std::make_shared<Scorer::NaiveScorer>();
@@ -23,7 +23,7 @@ class ScorerTestFixture : public testing::Test {
     simd_scorer = std::make_shared<Scorer::SimdScorer>();
     simd_avx512_scorer = std::make_shared<Scorer::SimdAvx512Scorer>();
 
-    exams_size_mismatch = std::vector(1, Exam(2, 'B'));
+    exams_size_mismatch = std::vector(1, ByteArray(2, 'B'));
     correct_answers_size_mismatch = {'A'};
     points_size_mismatch = {1, 2, 3};
 
@@ -49,7 +49,7 @@ class ScorerTestFixture : public testing::Test {
         'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
         'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
     };
-    points = std::vector<int8_t>(64, 2);
+    points = ByteArray(64, 2);
   }
 };
 

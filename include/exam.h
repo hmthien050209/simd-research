@@ -1,14 +1,116 @@
 #ifndef EXAM_H_INCLUDED
 #define EXAM_H_INCLUDED
 
-#include <cstdint>
+#include <immintrin.h>
+
+#include <stdexcept>
 #include <vector>
 
-using Exam = std::vector<char>;
+class ByteArray {
+ private:
+  size_t _size;
+  size_t _capacity;
+  size_t _block_count;
+  int8_t *_values;
 
-std::vector<Exam> generate_exams(const int32_t &number_of_exams,
-                                 const int32_t &number_of_questions);
-Exam generate_correct_answers(const int32_t &number_of_questions);
-std::vector<int8_t> generate_points(const int32_t &number_of_questions);
+#if defined(__AVX512BW__) && defined(__AVX512VL__) && defined(__AVX512F__) && \
+    defined(__AVX512DQ__)
+  bool _avx512 = true;
+#else
+  bool _avx512 = false;
+#endif
+
+  void construct(const size_t &size) {
+    _size = size;
+#if defined(__AVX2__) && !(defined(__AVX512BW__) && defined(__AVX512VL__) && \
+                           defined(__AVX512F__) && defined(__AVX512DQ__))
+    _block_count = (_size >> 5) + ((_size & 31) != 0);
+    _capacity = _capacity << 5;
+#else
+    _block_count = (_size >> 6) + ((_size & 63) != 0);
+    _capacity = _capacity << 6;
+#endif
+    _values = static_cast<int8_t *>(calloc(_capacity, sizeof(int8_t)));
+    if (_values == nullptr) {
+      throw std::runtime_error("Failed to allocate memory for ByteArray");
+    }
+  }
+
+  void fill_values(const size_t &size, const int8_t &value) const {
+#if defined(__AVX2__) && !(defined(__AVX512BW__) && defined(__AVX512VL__) && \
+                           defined(__AVX512F__) && defined(__AVX512DQ__))
+    for (size_t i = 0; i < _block_count; i++) {
+      _mm256_storeu_si256(reinterpret_cast<__m256i *>(_values + i),
+                          _mm256_set1_epi8(value));
+    }
+#elif defined(__AVX512BW__) && defined(__AVX512VL__) && \
+    defined(__AVX512F__) && defined(__AVX512DQ__)
+    for (size_t i = 0; i < _block_count; i++) {
+      _mm512_storeu_si512(reinterpret_cast<__m512i *>(_values + i),
+                          _mm512_set1_epi8(value));
+    }
+#else
+    std::fill_n(values, _capacity, value);
+#endif
+  }
+
+ public:
+  // Initialize an empty ByteArray
+  ByteArray() {  // NOLINT(*-pro-type-member-init)
+    construct(0);
+  }
+  // Initialize a ByteArray with `size`
+  explicit ByteArray(const size_t &size) {  // NOLINT(*-pro-type-member-init)
+    construct(size);
+  }
+
+  // Initializer list constructor
+  ByteArray(                               // NOLINT(*-pro-type-member-init)
+      const std::initializer_list<int8_t>  // NOLINT(*-pro-type-member-init)
+          &list) {                         // NOLINT(*-pro-type-member-init)
+    construct(list.size());
+    // ReSharper disable once CppObjectMemberMightNotBeInitialized
+    std::copy(list.begin(), list.end(), _values);
+  }
+
+  // Initialize a ByteArray with `size`, filled with `value`
+  ByteArray(const size_t &size,     // NOLINT(*-pro-type-member-init)
+            const int8_t &value) {  // NOLINT(*-pro-type-member-init)
+    construct(size);
+    fill_values(size, value);
+  }
+
+  // Getters
+  [[nodiscard]] size_t capacity() const { return _capacity; }
+  [[nodiscard]] size_t size() const { return _size; }
+  [[nodiscard]] size_t block_count_avx2() const {
+    // ReSharper disable once CppDFAConstantConditions
+    return _avx512 ? _block_count << 1 : _block_count;
+  }
+  [[nodiscard]] size_t block_count_avx512() const {
+    // ReSharper disable once CppDFAConstantConditions
+    if (!_avx512) {
+      throw std::runtime_error("AVX512 is not supported");
+    }
+    return _block_count;
+  }
+
+  // Get the `values` array for direct access
+  [[nodiscard]] int8_t *data() const { return _values; }
+
+  // Operators
+  int8_t &operator[](const size_t &index) const { return _values[index]; }
+
+  // Iterators
+  [[nodiscard]] int8_t *begin() const { return _values; }
+  [[nodiscard]] int8_t *end() const { return _values + _size; }
+
+  ~ByteArray() { free(_values); }
+};
+
+std::vector<ByteArray> generate_exams(const int32_t &number_of_exams,
+                                      const int32_t &number_of_questions);
+ByteArray generate_correct_answers(const int32_t &number_of_questions);
+ByteArray generate_points(const int32_t &number_of_questions);
 
 #endif
