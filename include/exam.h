@@ -25,10 +25,10 @@ class ByteArray {
 #if defined(__AVX2__) && !(defined(__AVX512BW__) && defined(__AVX512VL__) && \
                            defined(__AVX512F__) && defined(__AVX512DQ__))
     _block_count = (_size >> 5) + ((_size & 31) != 0);
-    _capacity = _capacity << 5;
+    _capacity = _block_count << 5;
 #else
     _block_count = (_size >> 6) + ((_size & 63) != 0);
-    _capacity = _capacity << 6;
+    _capacity = _block_count << 6;
 #endif
     _values = static_cast<int8_t *>(calloc(_capacity, sizeof(int8_t)));
     if (_values == nullptr) {
