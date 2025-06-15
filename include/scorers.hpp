@@ -205,25 +205,29 @@ class SimdAvx512Scorer final : public BaseScorer {
 
       for (size_t j = 0, _j = 0; j < correct_answers.block_count_avx512();
            ++j, _j = j << 6) {
+        // Load the exam and the correct answers
         __m512i v1 = _mm512_loadu_si512(exam.data() + _j);
-        __m512i v2 = _mm512_loadu_si512(correct_answers.data() + _j);
-        // -1 = 0b1111'1111'1111...1111: full 1s
-        v1 = _mm512_mask_mov_epi8(v1, _mm512_cmpeq_epi8_mask(v1, v2),
-                                  _mm512_set1_epi64(-1));
-        v2 = _mm512_loadu_si512(points.data() + _j);
+        const __m512i v2 = _mm512_loadu_si512(correct_answers.data() + _j);
 
-        v1 = _mm512_and_si512(v1, v2);
+        // Compute the mask
+        const __mmask64 mask = _mm512_cmpeq_epi8_mask(v1, v2);
+
+        // Load the points
+        v1 = _mm512_loadu_si512(points.data() + _j);
+
+        // The masked points
+        v1 = _mm512_maskz_mov_epi8(mask, v1);
+
+        // Final sum calculation
         v1 = _mm512_sad_epu8(v1, _mm512_setzero_si512());
+        uint64_t sum[8];
+        _mm512_storeu_si512(sum, v1);
 
-        // Split the 512-bit vector into two 256-bit vectors and then sum them
-        // up like we did in AVX2
-        const auto lo = _mm512_extracti32x8_epi32(v1, 0);
-        const auto hi = _mm512_extracti32x8_epi32(v1, 1);
-        scored_exams_points[i] +=
-            _mm256_extract_epi16(lo, 0) + _mm256_extract_epi16(lo, 4) +
-            _mm256_extract_epi16(lo, 8) + _mm256_extract_epi16(lo, 12) +
-            _mm256_extract_epi16(hi, 0) + _mm256_extract_epi16(hi, 4) +
-            _mm256_extract_epi16(hi, 8) + _mm256_extract_epi16(hi, 12);
+        for (const auto &k : sum) {
+          // In fact, the results are stored at the lower 16-bit of each 64-bit
+          // group, so we can safely cast here
+          scored_exams_points[i] += static_cast<int32_t>(k);
+        }
       }
     }
 
