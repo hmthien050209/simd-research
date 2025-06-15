@@ -32,7 +32,7 @@ class ByteArray {
     _capacity = _block_count << 6;
 #endif
     _values = static_cast<int8_t *>(calloc(_capacity, sizeof(int8_t)));
-    if (_values == nullptr) {
+    if (!_values) {
       throw std::runtime_error("Failed to allocate memory for ByteArray");
     }
   }
@@ -150,7 +150,7 @@ class ByteArray {
   [[nodiscard]] int8_t *end() const { return _values + _size; }
 
   ~ByteArray() {
-    if (!_values) free(_values);
+    if (_values) free(_values);
   }
 };
 
