@@ -35,7 +35,7 @@ python3 ./utils/benchmark_graphs.py benchmark/
 ## Results
 ### Benchmark system
 > [!NOTE]
-> This is a VM that I borrow from my friend, special thanks to @bm-mit
+> This is a VM that I borrowed from my friend, special thanks to [@bmin-mit](https://github.com/bmin-mit).
 - Ubuntu 24.04.2 LTS x86_64 6.8.0-60-generic
 - 11th Gen Intel i5-1135G7 (2 or 4) @ 2.419GHz
 - 4 GB RAM
