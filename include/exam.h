@@ -3,6 +3,7 @@
 
 #include <immintrin.h>
 
+#include <cstring>
 #include <stdexcept>
 #include <vector>
 
@@ -56,9 +57,7 @@ class ByteArray {
 
  public:
   // Initialize an empty ByteArray
-  ByteArray() {  // NOLINT(*-pro-type-member-init)
-    construct(0);
-  }
+  ByteArray() : _size(0), _capacity(0), _block_count(0), _values(nullptr) {}
   // Initialize a ByteArray with `size`
   explicit ByteArray(const size_t &size) {  // NOLINT(*-pro-type-member-init)
     construct(size);
@@ -80,6 +79,54 @@ class ByteArray {
     fill_values(size, value);
   }
 
+  // Copy constructor
+  ByteArray(const ByteArray &other) {  // NOLINT(*-pro-type-member-init)
+    construct(other._size);
+    // ReSharper disable once CppObjectMemberMightNotBeInitialized
+    std::memcpy(_values, other._values, other._size * sizeof(int8_t));
+  }
+
+  // Move constructor
+  ByteArray(ByteArray &&other) noexcept
+      : _size(other._size),
+        _capacity(other._capacity),
+        _block_count(other._block_count),
+        _values(other._values) {
+    other._values = nullptr;
+    other._size = 0;
+    other._capacity = 0;
+    other._block_count = 0;
+  }
+
+  // Copy assignment operator
+  ByteArray &operator=(const ByteArray &other) {
+    if (this != &other) {
+      free(_values);
+      construct(other._size);
+      std::memcpy(_values, other._values, other._size * sizeof(int8_t));
+    }
+    return *this;
+  }
+
+  // Move assignment operator
+  ByteArray &operator=(ByteArray &&other) noexcept {
+    if (this != &other) {
+      free(_values);
+      _size = other._size;
+      _capacity = other._capacity;
+      _block_count = other._block_count;
+      _values = other._values;
+      other._values = nullptr;
+      other._size = 0;
+      other._capacity = 0;
+      other._block_count = 0;
+    }
+    return *this;
+  }
+
+  // Operators
+  int8_t &operator[](const size_t &index) const { return _values[index]; }
+
   // Getters
   [[nodiscard]] size_t capacity() const { return _capacity; }
   [[nodiscard]] size_t size() const { return _size; }
@@ -98,14 +145,13 @@ class ByteArray {
   // Get the `values` array for direct access
   [[nodiscard]] int8_t *data() const { return _values; }
 
-  // Operators
-  int8_t &operator[](const size_t &index) const { return _values[index]; }
-
   // Iterators
   [[nodiscard]] int8_t *begin() const { return _values; }
   [[nodiscard]] int8_t *end() const { return _values + _size; }
 
-  ~ByteArray() { free(_values); }
+  ~ByteArray() {
+    if (!_values) free(_values);
+  }
 };
 
 std::vector<ByteArray> generate_exams(const int32_t &number_of_exams,
