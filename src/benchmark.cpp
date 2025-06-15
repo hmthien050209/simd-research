@@ -62,6 +62,8 @@ BENCHMARK(BM_SimdScorer)
     ->ArgsProduct({{100'000, 5'000'000, 10'000'000}, {10, 100, 200}})
     ->Unit(benchmark::kMillisecond);
 
+#if defined(__AVX512BW__) && defined(__AVX512VL__) && defined(__AVX512F__) && \
+    defined(__AVX512DQ__)
 static void BM_SimdAvx512Scorer(benchmark::State& state) {
   for (auto _ : state) {
     state.PauseTiming();
@@ -80,5 +82,6 @@ static void BM_SimdAvx512Scorer(benchmark::State& state) {
 BENCHMARK(BM_SimdAvx512Scorer)
     ->ArgsProduct({{100'000, 5'000'000, 10'000'000}, {10, 100, 200}})
     ->Unit(benchmark::kMillisecond);
+#endif
 
 BENCHMARK_MAIN();

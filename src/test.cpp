@@ -19,9 +19,13 @@ class ScorerTestFixture : public testing::Test {
 
   void SetUp() override {
     naive_scorer = std::make_shared<Scorer::NaiveScorer>();
-    boolean_multiplication_scorer = std::make_shared<Scorer::BooleanMultiplicationScorer>();
+    boolean_multiplication_scorer =
+        std::make_shared<Scorer::BooleanMultiplicationScorer>();
     simd_scorer = std::make_shared<Scorer::SimdScorer>();
+#if defined(__AVX512BW__) && defined(__AVX512VL__) && defined(__AVX512F__) && \
+    defined(__AVX512DQ__)
     simd_avx512_scorer = std::make_shared<Scorer::SimdAvx512Scorer>();
+#endif
 
     exams_size_mismatch = std::vector(1, ByteArray(2, 'B'));
     correct_answers_size_mismatch = {'A'};
@@ -66,10 +70,13 @@ TEST_F(ScorerTestFixture, HandleVectorSizeMismatch) {
       simd_scorer->score(exams_size_mismatch, correct_answers_size_mismatch,
                          points_size_mismatch),
       std::runtime_error);
+#if defined(__AVX512BW__) && defined(__AVX512VL__) && defined(__AVX512F__) && \
+    defined(__AVX512DQ__)
   EXPECT_THROW(simd_avx512_scorer->score(exams_size_mismatch,
                                          correct_answers_size_mismatch,
                                          points_size_mismatch),
                std::runtime_error);
+#endif
 }
 
 TEST_F(ScorerTestFixture, ScorerWorks) {
@@ -79,6 +86,9 @@ TEST_F(ScorerTestFixture, ScorerWorks) {
   EXPECT_EQ(
       boolean_multiplication_scorer->score(exams, correct_answers, points),
       simd_scorer->score(exams, correct_answers, points));
+#if defined(__AVX512BW__) && defined(__AVX512VL__) && defined(__AVX512F__) && \
+    defined(__AVX512DQ__)
   EXPECT_EQ(simd_scorer->score(exams, correct_answers, points),
             simd_avx512_scorer->score(exams, correct_answers, points));
+#endif
 }

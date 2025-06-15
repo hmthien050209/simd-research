@@ -122,12 +122,11 @@ class SimdScorer final : public BaseScorer {
             "same.");
       }
 
-      // Block count will be correctly calculated on AVX2
       for (size_t j = 0, _j = 0; j < correct_answers.block_count_avx2();
            ++j, _j = j << 5) {
         // Vectorize exam's MCQs
         __m256i v1 = _mm256_loadu_si256(
-            reinterpret_cast<const __m256i *>(exams.data() + _j));
+            reinterpret_cast<const __m256i *>(exam.data() + _j));
         // Vectorize correct MCQs
         __m256i v2 = _mm256_loadu_si256(
             reinterpret_cast<const __m256i *>(correct_answers.data() + _j));
@@ -157,6 +156,8 @@ class SimdScorer final : public BaseScorer {
   }
 };
 
+#if defined(__AVX512BW__) && defined(__AVX512VL__) && defined(__AVX512F__) && \
+    defined(__AVX512DQ__)
 class SimdAvx512Scorer final : public BaseScorer {
  public:
   std::vector<int32_t> score(const std::vector<ByteArray> &exams,
@@ -204,7 +205,7 @@ class SimdAvx512Scorer final : public BaseScorer {
 
       for (size_t j = 0, _j = 0; j < correct_answers.block_count_avx512();
            ++j, _j = j << 6) {
-        __m512i v1 = _mm512_loadu_si512(exams.data() + _j);
+        __m512i v1 = _mm512_loadu_si512(exam.data() + _j);
         __m512i v2 = _mm512_loadu_si512(correct_answers.data() + _j);
         // -1 = 0b1111'1111'1111...1111: full 1s
         v1 = _mm512_mask_mov_epi8(v1, _mm512_cmpeq_epi8_mask(v1, v2),
@@ -229,5 +230,6 @@ class SimdAvx512Scorer final : public BaseScorer {
     return scored_exams_points;
   }
 };
+#endif
 }  // namespace Scorer
 #endif

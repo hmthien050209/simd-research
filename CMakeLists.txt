@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(SANITIZER_FLAGS -fno-omit-frame-pointer -fsanitize=address -fno-sanitize-recover=all)
 
 # Compile with AVX512
-add_compile_options(-mavx512bw -mavx512vl -mavx512f -mavx512dq -Wall)
+add_compile_options(-mavx2 -mavx512bw -mavx512vl -mavx512f -mavx512dq -Wall)
 
 set(CMAKE_EXE_LINKER_FLAGS ${SANITIZERS_FLAGS})
 
