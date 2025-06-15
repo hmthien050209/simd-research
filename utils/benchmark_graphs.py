@@ -60,7 +60,7 @@ def render_graphs(file_name: str):
         ax.legend()
         ax.grid(True)
 
-        plt.savefig(f"graphs/scoring_time_{exam_num}.png")
+        plt.savefig(f"graphs/{file_name}_{exam_num}.png")
         plt.clf()
 
 
