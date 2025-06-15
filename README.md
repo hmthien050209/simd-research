@@ -12,10 +12,21 @@ This repository contains code of my SIMD experiment.
 ```shell
 cmake --preset=default
 cmake --build build
-./build/main
+
+# Test
+./build/main_test
+
+# Benchmark
+mkdir -p benchmark
+./build/main_benchmark --benchmark_format=json --benchmark_out=benchmark/benchmark_results.json
+
+# Benchmark graphs (will be generated in ./graphs)
+mkdir -p graphs
+python3 ./utils/benchmark_graphs.py benchmark/benchmark_results.json
 ```
 
 ## Reference
 - https://www.pcg-random.org/ (used in the random exam generator)
+- [Intel Intrinsics Guide](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html)
 
 ## License
