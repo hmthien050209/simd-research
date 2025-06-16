@@ -295,10 +295,7 @@ class SimdAvx512Scorer final : public BaseScorer {
                             correct_answers[j + 5], correct_answers[j + 4],
                             correct_answers[j + 3], correct_answers[j + 2],
                             correct_answers[j + 1], correct_answers[j]);
-        // -1 = 0b1111'1111'1111...1111: full 1s
-        v1 = _mm512_mask_mov_epi8(_mm512_setzero_si512(), 
-                                  _mm512_cmpeq_epi8_mask(v1, v2),
-                                  _mm512_set1_epi64(-1));
+        __mmask64 mask = _mm512_cmpeq_epi8_mask(v1, v2);
         v2 = _mm512_set_epi8(
             points[j + 63], points[j + 62], points[j + 61], points[j + 60],
             points[j + 59], points[j + 58], points[j + 57], points[j + 56],
@@ -316,6 +313,8 @@ class SimdAvx512Scorer final : public BaseScorer {
             points[j + 11], points[j + 10], points[j + 9], points[j + 8],
             points[j + 7], points[j + 6], points[j + 5], points[j + 4],
             points[j + 3], points[j + 2], points[j + 1], points[j]);
+        v1 = _mm512_maskz_mov_epi8(mask, v2);
+       
 
         v1 = _mm512_and_si512(v1, v2);
         v1 = _mm512_sad_epu8(v1, _mm512_setzero_si512());
