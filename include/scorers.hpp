@@ -296,7 +296,8 @@ class SimdAvx512Scorer final : public BaseScorer {
                             correct_answers[j + 3], correct_answers[j + 2],
                             correct_answers[j + 1], correct_answers[j]);
         // -1 = 0b1111'1111'1111...1111: full 1s
-        v1 = _mm512_mask_mov_epi8(v1, _mm512_cmpeq_epi8_mask(v1, v2),
+        v1 = _mm512_mask_mov_epi8(_mm512_setzero_si512(), 
+                                  _mm512_cmpeq_epi8_mask(v1, v2),
                                   _mm512_set1_epi64(-1));
         v2 = _mm512_set_epi8(
             points[j + 63], points[j + 62], points[j + 61], points[j + 60],
