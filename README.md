@@ -1,6 +1,6 @@
 # simd-research
 
-This repository contains code of my SIMD experiment.
+This repository contains the code for my SIMD experiment.
 
 ## Requirements
 
@@ -56,4 +56,5 @@ python3 ./utils/benchmark_graphs.py benchmark/
 
 ## License
 MIT License
+
 Please note that this license applies to ALL branches of this repository as stated in the [LICENSE](./LICENSE) file.
