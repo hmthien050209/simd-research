@@ -55,4 +55,5 @@ python3 ./utils/benchmark_graphs.py benchmark/
 - [Intel Intrinsics Guide](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html)
 
 ## License
-TBD
+MIT License
+Please note that this license applies to ALL branches of this repository as stated in the [LICENSE](./LICENSE) file.
